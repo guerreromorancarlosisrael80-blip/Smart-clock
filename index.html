@@ -14,9 +14,24 @@
       --border: #1e2538;
       --accent: #00e5ff;
       --accent-2: #7c4dff;
+      --temp-accent: #00e5ff;
+      --glow: 0 0 6px var(--accent);
       --text: #f0f4ff;
       --muted: #8898b0;
       --good: #00e676;
+    }
+
+    body.night-mode {
+      --bg: #050403;
+      --card: #0c0907;
+      --border: #1d1510;
+      --accent: #ff7b00;
+      --accent-2: #b83b00;
+      --temp-accent: #ff8c1a;
+      --glow: none;
+      --text: #e6c7a8;
+      --muted: #8a6c52;
+      --good: #ff9d3b;
     }
 
     * {
@@ -34,6 +49,7 @@
       background-color: var(--bg);
       color: var(--text);
       overflow: hidden;
+      transition: background-color 0.6s ease, color 0.6s ease;
     }
 
     .dashboard {
@@ -44,6 +60,19 @@
       width: 100vw;
       height: 100vh;
       padding: 11px;
+      transition: grid-template-columns 0.4s ease, grid-template-rows 0.4s ease, gap 0.4s ease;
+    }
+
+    body.focus-mode .dashboard {
+      grid-template-columns: 1fr;
+      grid-template-rows: 1fr;
+      gap: 0;
+    }
+
+    body.focus-mode .weather-card,
+    body.focus-mode .matrix-card,
+    body.focus-mode .forecast-card {
+      display: none;
     }
 
     .card {
@@ -56,12 +85,19 @@
       justify-content: space-between;
       position: relative;
       overflow: hidden;
+      transition: background 0.5s ease, border-color 0.5s ease, box-shadow 0.5s ease;
     }
 
     /* Tarjeta 1: Reloj grande */
     .clock-card {
       justify-content: center;
-      background: radial-gradient(circle at top left, #182138 0%, var(--card) 72%);
+      background: radial-gradient(circle at top left, color-mix(in srgb, var(--accent) 12%, var(--card)) 0%, var(--card) 74%);
+    }
+
+    body.focus-mode .clock-card {
+      border-radius: 20px;
+      align-items: center;
+      text-align: center;
     }
 
     .status-bar {
@@ -75,6 +111,26 @@
       font-size: 11px;
       color: var(--muted);
       letter-spacing: 0.5px;
+      z-index: 2;
+    }
+
+    .status-right {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .mode-pill {
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid var(--border);
+      color: var(--text);
+      font-size: 9.5px;
+      font-weight: 700;
+      letter-spacing: 0.8px;
+      padding: 2px 7px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      transition: border-color 0.3s ease, background 0.3s ease;
     }
 
     .dot-live {
@@ -84,13 +140,13 @@
       background: var(--good);
       border-radius: 50%;
       margin-right: 5px;
-      box-shadow: 0 0 8px var(--good);
-      animation: pulse 2s infinite;
+      box-shadow: var(--glow);
+      animation: pulse 2.4s infinite;
     }
 
     @keyframes pulse {
-      0%, 100% { opacity: 1; }
-      50% { opacity: 0.35; }
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.35; transform: scale(0.85); }
     }
 
     .time-row {
@@ -100,15 +156,24 @@
       margin-top: 8px;
     }
 
+    body.focus-mode .time-row {
+      justify-content: center;
+    }
+
     .time-main {
       font-size: clamp(82px, 16.5vw, 128px);
       font-weight: 800;
       letter-spacing: -3px;
       line-height: 0.95;
       font-variant-numeric: tabular-nums;
-      background: linear-gradient(180deg, #ffffff 25%, #b3c8ff 100%);
+      background: linear-gradient(180deg, var(--text) 25%, color-mix(in srgb, var(--accent) 55%, var(--text)) 100%);
       -webkit-background-clip: text;
       -webkit-text-fill-color: transparent;
+      transition: font-size 0.35s ease;
+    }
+
+    body.focus-mode .time-main {
+      font-size: clamp(104px, 22vw, 168px);
     }
 
     .time-sec {
@@ -116,6 +181,7 @@
       font-weight: 700;
       color: var(--accent);
       font-variant-numeric: tabular-nums;
+      transition: color 0.4s ease;
     }
 
     .date-text {
@@ -124,11 +190,12 @@
       font-weight: 500;
       color: var(--muted);
       text-transform: capitalize;
+      transition: color 0.4s ease;
     }
 
-    /* Tarjeta 2: Clima mejorado */
+    /* Tarjeta 2: Clima con acento dinámico */
     .weather-card {
-      background: radial-gradient(circle at top right, #15273b 0%, var(--card) 75%);
+      background: radial-gradient(circle at top right, color-mix(in srgb, var(--temp-accent) 16%, var(--card)) 0%, var(--card) 76%);
       gap: 6px;
     }
 
@@ -147,7 +214,9 @@
       font-size: 46px;
       font-weight: 800;
       line-height: 1;
+      color: var(--temp-accent);
       font-variant-numeric: tabular-nums;
+      transition: color 0.5s ease;
     }
 
     .weather-feels {
@@ -159,11 +228,12 @@
     .weather-icon {
       font-size: 40px;
       line-height: 1;
+      filter: drop-shadow(0 2px 8px rgba(0, 0, 0, 0.35));
     }
 
     .weather-desc {
       font-size: 14px;
-      color: var(--accent);
+      color: var(--text);
       font-weight: 700;
     }
 
@@ -178,11 +248,12 @@
     }
 
     .metric-box {
-      background: rgba(9, 11, 16, 0.55);
-      border: 1px solid rgba(30, 37, 56, 0.8);
+      background: rgba(9, 11, 16, 0.45);
+      border: 1px solid var(--border);
       border-radius: 9px;
       padding: 5px 6px;
       text-align: center;
+      transition: border-color 0.4s ease;
     }
 
     .metric-box strong {
@@ -210,19 +281,19 @@
     }
 
     .pixel {
-      background: #1a2133;
+      background: rgba(255, 255, 255, 0.04);
       border-radius: 2.5px;
-      transition: background 0.22s, box-shadow 0.22s;
+      transition: background 0.25s ease, box-shadow 0.25s ease;
     }
 
     .pixel.on {
       background: var(--accent);
-      box-shadow: 0 0 5px var(--accent);
+      box-shadow: var(--glow);
     }
 
     .pixel.alt {
       background: var(--accent-2);
-      box-shadow: 0 0 5px var(--accent-2);
+      box-shadow: var(--glow);
     }
 
     .ticker-box {
@@ -239,6 +310,7 @@
       letter-spacing: 1.2px;
       color: var(--accent);
       font-weight: 700;
+      transition: color 0.4s ease;
     }
 
     .ticker-msg {
@@ -246,6 +318,7 @@
       font-weight: 600;
       line-height: 1.25;
       color: var(--text);
+      transition: opacity 0.35s ease;
     }
 
     /* Tarjeta 4: Pronóstico por horas */
@@ -281,11 +354,12 @@
     }
 
     .f-item {
-      background: #0d1019;
+      background: rgba(9, 11, 16, 0.45);
       border: 1px solid var(--border);
       border-radius: 10px;
       padding: 6px 4px;
       text-align: center;
+      transition: border-color 0.4s ease;
     }
 
     .f-hour {
@@ -310,6 +384,7 @@
       color: var(--accent);
       margin-top: 1px;
       font-variant-numeric: tabular-nums;
+      transition: color 0.4s ease;
     }
   </style>
 </head>
@@ -318,8 +393,11 @@
     <!-- RELOJ -->
     <div class="card clock-card">
       <div class="status-bar">
-        <span><span class="dot-live"></span>ESP-STYLE DESK HUB</span>
-        <span id="city-label">COLIMA, MX</span>
+        <span><span class="dot-live"></span><span id="hub-label">ESP-STYLE DESK HUB</span></span>
+        <div class="status-right">
+          <button class="mode-pill" id="focus-btn" type="button" onclick="toggleFocus(event)">Ambiente</button>
+          <span id="city-label">COLIMA, MX</span>
+        </div>
       </div>
       <div class="time-row">
         <div class="time-main" id="clock">00:00</div>
@@ -376,7 +454,15 @@
     const LAT = 19.2433;
     const LON = -103.7250;
 
-    // 1. RELOJ Y FECHA
+    // 1. MODO NOCTURNO AUTOMÁTICO (22:00 a 05:59)
+    function applyNightModeIfNeeded() {
+      const hour = new Date().getHours();
+      const isNight = hour >= 22 || hour < 6;
+      document.body.classList.toggle('night-mode', isNight);
+      document.getElementById('hub-label').textContent = isNight ? 'NIGHT DIM HUB' : 'ESP-STYLE DESK HUB';
+    }
+
+    // 2. RELOJ Y FECHA
     function updateClock() {
       const now = new Date();
       const h = String(now.getHours()).padStart(2, '0');
@@ -388,11 +474,14 @@
 
       const opciones = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
       document.getElementById('date').textContent = now.toLocaleDateString('es-MX', opciones);
+
+      if (s === '00') applyNightModeIfNeeded();
     }
+    applyNightModeIfNeeded();
     setInterval(updateClock, 1000);
     updateClock();
 
-    // 2. MATRIZ DE PUNTOS ANIMADA
+    // 3. MATRIZ DE PUNTOS ANIMADA
     const matrixEl = document.getElementById('matrix');
     const totalPixels = 12 * 7;
     const pixels = [];
@@ -416,20 +505,34 @@
     setInterval(animateMatrix, 320);
     animateMatrix();
 
-    // 3. MENSAJES ROTATIVOS
+    // 4. MENSAJES ROTATIVOS
     const mensajes = [
       { tag: 'ESTADO', msg: 'Sistema en línea · Sincronizado por Wi-Fi' },
       { tag: 'TIP VISUAL', msg: 'Toca la pantalla para alternar colores LED' },
-      { tag: 'ENERGÍA', msg: '3 toques al botón Home activa Acceso Guiado' }
+      { tag: 'MODO AMBIENTE', msg: 'Usa el botón Ambiente para ver solo el reloj' }
     ];
     let msgIdx = 0;
+    const tickerEl = document.getElementById('ticker-text');
     setInterval(() => {
-      msgIdx = (msgIdx + 1) % mensajes.length;
-      document.getElementById('ticker-tag').textContent = mensajes[msgIdx].tag;
-      document.getElementById('ticker-text').textContent = mensajes[msgIdx].msg;
+      tickerEl.style.opacity = '0';
+      setTimeout(() => {
+        msgIdx = (msgIdx + 1) % mensajes.length;
+        document.getElementById('ticker-tag').textContent = mensajes[msgIdx].tag;
+        tickerEl.textContent = mensajes[msgIdx].msg;
+        tickerEl.style.opacity = '1';
+      }, 220);
     }, 8000);
 
-    // 4. CLIMA DETALLADO CON OPEN-METEO
+    // 5. COLOR DINÁMICO SEGÚN TEMPERATURA
+    function setTempAccent(temp) {
+      let color = '#00e5ff';
+      if (temp >= 31) color = '#ff6d00';
+      else if (temp >= 25) color = '#ffd166';
+      else if (temp <= 18) color = '#64b5f6';
+      document.documentElement.style.setProperty('--temp-accent', color);
+    }
+
+    // 6. CLIMA DETALLADO CON OPEN-METEO
     function weatherCodeToInfo(code) {
       if (code === 0) return ['☀️', 'Despejado'];
       if (code === 1) return ['🌤️', 'Mayormente despejado'];
@@ -460,6 +563,7 @@
         const tMax = Math.round(data.daily.temperature_2m_max[0]);
 
         document.getElementById('temp').textContent = `${temp}°`;
+        setTempAccent(temp);
         document.getElementById('w-feels').textContent = `Sensación ${feels}°`;
         document.getElementById('w-icon').textContent = ico;
         document.getElementById('w-desc').textContent = desc;
@@ -472,7 +576,6 @@
         const updTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
         document.getElementById('w-updated').textContent = `Act. ${updTime}`;
 
-        // Buscar el índice horario más cercano a la hora actual
         const currentIsoPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:00`;
         let startIdx = data.hourly.time.findIndex(t => t >= currentIsoPrefix);
         if (startIdx < 0) startIdx = now.getHours();
@@ -506,10 +609,13 @@
     fetchWeather();
     setInterval(fetchWeather, 15 * 60 * 1000);
     document.addEventListener('visibilitychange', () => {
-      if (!document.hidden) fetchWeather();
+      if (!document.hidden) {
+        applyNightModeIfNeeded();
+        fetchWeather();
+      }
     });
 
-    // 5. CAMBIO DE COLOR AL TOCAR LA PANTALLA
+    // 7. CAMBIO DE COLOR AL TOCAR LA PANTALLA
     const themes = [
       ['#00e5ff', '#7c4dff'],
       ['#00e676', '#00b0ff'],
@@ -518,9 +624,17 @@
     ];
     let tIdx = 0;
     function toggleTheme() {
+      if (document.body.classList.contains('night-mode')) return;
       tIdx = (tIdx + 1) % themes.length;
       document.documentElement.style.setProperty('--accent', themes[tIdx][0]);
       document.documentElement.style.setProperty('--accent-2', themes[tIdx][1]);
+    }
+
+    // 8. MODO AMBIENTE (RELOJ GIGANTE)
+    function toggleFocus(e) {
+      e.stopPropagation();
+      const active = document.body.classList.toggle('focus-mode');
+      document.getElementById('focus-btn').textContent = active ? 'Dashboard' : 'Ambiente';
     }
   </script>
 </body>
