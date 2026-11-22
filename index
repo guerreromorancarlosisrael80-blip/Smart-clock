@@ -1,0 +1,527 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="SmartClock" />
+  <title>Smart Desk Clock</title>
+  <style>
+    :root {
+      --bg: #090b10;
+      --card: #121622;
+      --border: #1e2538;
+      --accent: #00e5ff;
+      --accent-2: #7c4dff;
+      --text: #f0f4ff;
+      --muted: #8898b0;
+      --good: #00e676;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      -webkit-user-select: none;
+      user-select: none;
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Segoe UI", Roboto, sans-serif;
+    }
+
+    html, body {
+      width: 100%;
+      height: 100%;
+      background-color: var(--bg);
+      color: var(--text);
+      overflow: hidden;
+    }
+
+    .dashboard {
+      display: grid;
+      grid-template-columns: 1.55fr 1fr;
+      grid-template-rows: 1.15fr 0.78fr;
+      gap: 10px;
+      width: 100vw;
+      height: 100vh;
+      padding: 11px;
+    }
+
+    .card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 12px 16px;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Tarjeta 1: Reloj grande */
+    .clock-card {
+      justify-content: center;
+      background: radial-gradient(circle at top left, #182138 0%, var(--card) 72%);
+    }
+
+    .status-bar {
+      position: absolute;
+      top: 10px;
+      left: 16px;
+      right: 16px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.5px;
+    }
+
+    .dot-live {
+      display: inline-block;
+      width: 7px;
+      height: 7px;
+      background: var(--good);
+      border-radius: 50%;
+      margin-right: 5px;
+      box-shadow: 0 0 8px var(--good);
+      animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.35; }
+    }
+
+    .time-row {
+      display: flex;
+      align-items: baseline;
+      gap: 8px;
+      margin-top: 8px;
+    }
+
+    .time-main {
+      font-size: clamp(82px, 16.5vw, 128px);
+      font-weight: 800;
+      letter-spacing: -3px;
+      line-height: 0.95;
+      font-variant-numeric: tabular-nums;
+      background: linear-gradient(180deg, #ffffff 25%, #b3c8ff 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .time-sec {
+      font-size: clamp(28px, 5vw, 42px);
+      font-weight: 700;
+      color: var(--accent);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .date-text {
+      margin-top: 6px;
+      font-size: 15px;
+      font-weight: 500;
+      color: var(--muted);
+      text-transform: capitalize;
+    }
+
+    /* Tarjeta 2: Clima mejorado */
+    .weather-card {
+      background: radial-gradient(circle at top right, #15273b 0%, var(--card) 75%);
+      gap: 6px;
+    }
+
+    .weather-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .weather-temp-group {
+      display: flex;
+      flex-direction: column;
+    }
+
+    .weather-temp {
+      font-size: 46px;
+      font-weight: 800;
+      line-height: 1;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .weather-feels {
+      font-size: 11px;
+      color: var(--muted);
+      margin-top: 2px;
+    }
+
+    .weather-icon {
+      font-size: 40px;
+      line-height: 1;
+    }
+
+    .weather-desc {
+      font-size: 14px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .weather-metrics {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      border-top: 1px solid var(--border);
+      padding-top: 8px;
+      font-size: 11px;
+      color: var(--muted);
+    }
+
+    .metric-box {
+      background: rgba(9, 11, 16, 0.55);
+      border: 1px solid rgba(30, 37, 56, 0.8);
+      border-radius: 9px;
+      padding: 5px 6px;
+      text-align: center;
+    }
+
+    .metric-box strong {
+      color: var(--text);
+      display: block;
+      font-size: 12px;
+      margin-top: 2px;
+      font-variant-numeric: tabular-nums;
+    }
+
+    /* Tarjeta 3: Matriz LED + Mensajes */
+    .matrix-card {
+      flex-direction: row;
+      align-items: center;
+      gap: 14px;
+    }
+
+    .matrix-grid {
+      display: grid;
+      grid-template-columns: repeat(12, 1fr);
+      gap: 3px;
+      width: 142px;
+      height: 82px;
+      flex-shrink: 0;
+    }
+
+    .pixel {
+      background: #1a2133;
+      border-radius: 2.5px;
+      transition: background 0.22s, box-shadow 0.22s;
+    }
+
+    .pixel.on {
+      background: var(--accent);
+      box-shadow: 0 0 5px var(--accent);
+    }
+
+    .pixel.alt {
+      background: var(--accent-2);
+      box-shadow: 0 0 5px var(--accent-2);
+    }
+
+    .ticker-box {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 4px;
+    }
+
+    .ticker-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 1.2px;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    .ticker-msg {
+      font-size: 14px;
+      font-weight: 600;
+      line-height: 1.25;
+      color: var(--text);
+    }
+
+    /* Tarjeta 4: Pronóstico por horas */
+    .forecast-card {
+      justify-content: space-between;
+    }
+
+    .forecast-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .forecast-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--muted);
+      font-weight: 700;
+    }
+
+    .forecast-updated {
+      font-size: 10px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .forecast-list {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 6px;
+      margin-top: 6px;
+    }
+
+    .f-item {
+      background: #0d1019;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 6px 4px;
+      text-align: center;
+    }
+
+    .f-hour {
+      font-size: 10px;
+      color: var(--muted);
+      font-variant-numeric: tabular-nums;
+    }
+
+    .f-ico {
+      font-size: 16px;
+      margin: 2px 0;
+    }
+
+    .f-val {
+      font-size: 12px;
+      font-weight: 700;
+      font-variant-numeric: tabular-nums;
+    }
+
+    .f-pop {
+      font-size: 9.5px;
+      color: var(--accent);
+      margin-top: 1px;
+      font-variant-numeric: tabular-nums;
+    }
+  </style>
+</head>
+<body>
+  <div class="dashboard" onclick="toggleTheme()">
+    <!-- RELOJ -->
+    <div class="card clock-card">
+      <div class="status-bar">
+        <span><span class="dot-live"></span>ESP-STYLE DESK HUB</span>
+        <span id="city-label">COLIMA, MX</span>
+      </div>
+      <div class="time-row">
+        <div class="time-main" id="clock">00:00</div>
+        <div class="time-sec" id="seconds">00</div>
+      </div>
+      <div class="date-text" id="date">Cargando fecha...</div>
+    </div>
+
+    <!-- CLIMA ACTUAL -->
+    <div class="card weather-card">
+      <div>
+        <div class="weather-top">
+          <div class="weather-temp-group">
+            <div class="weather-temp" id="temp">--°</div>
+            <div class="weather-feels" id="w-feels">Sensación --°</div>
+          </div>
+          <div class="weather-icon" id="w-icon">⛅</div>
+        </div>
+        <div class="weather-desc" id="w-desc">Actualizando clima...</div>
+      </div>
+      <div class="weather-metrics">
+        <div class="metric-box">Mín/Máx<strong id="w-minmax">--°/--°</strong></div>
+        <div class="metric-box">Lluvia<strong id="w-pop">--%</strong></div>
+        <div class="metric-box">Humedad<strong id="w-hum">--%</strong></div>
+        <div class="metric-box">Viento<strong id="w-wind">-- km/h</strong></div>
+      </div>
+    </div>
+
+    <!-- MATRIZ LED VIRTUAL + NOTAS -->
+    <div class="card matrix-card">
+      <div class="matrix-grid" id="matrix"></div>
+      <div class="ticker-box">
+        <div class="ticker-label" id="ticker-tag">MODO ACTIVO</div>
+        <div class="ticker-msg" id="ticker-text">Toca la pantalla para cambiar el color del tema</div>
+      </div>
+    </div>
+
+    <!-- PRONÓSTICO PRÓXIMAS HORAS -->
+    <div class="card forecast-card">
+      <div class="forecast-header">
+        <div class="forecast-title">Próximas horas</div>
+        <div class="forecast-updated" id="w-updated">--:--</div>
+      </div>
+      <div class="forecast-list" id="forecast">
+        <div class="f-item"><div class="f-hour">--:--</div><div class="f-ico">⏳</div><div class="f-val">--°</div><div class="f-pop">--%</div></div>
+        <div class="f-item"><div class="f-hour">--:--</div><div class="f-ico">⏳</div><div class="f-val">--°</div><div class="f-pop">--%</div></div>
+        <div class="f-item"><div class="f-hour">--:--</div><div class="f-ico">⏳</div><div class="f-val">--°</div><div class="f-pop">--%</div></div>
+        <div class="f-item"><div class="f-hour">--:--</div><div class="f-ico">⏳</div><div class="f-val">--°</div><div class="f-pop">--%</div></div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    const LAT = 19.2433;
+    const LON = -103.7250;
+
+    // 1. RELOJ Y FECHA
+    function updateClock() {
+      const now = new Date();
+      const h = String(now.getHours()).padStart(2, '0');
+      const m = String(now.getMinutes()).padStart(2, '0');
+      const s = String(now.getSeconds()).padStart(2, '0');
+
+      document.getElementById('clock').textContent = `${h}:${m}`;
+      document.getElementById('seconds').textContent = s;
+
+      const opciones = { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' };
+      document.getElementById('date').textContent = now.toLocaleDateString('es-MX', opciones);
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+
+    // 2. MATRIZ DE PUNTOS ANIMADA
+    const matrixEl = document.getElementById('matrix');
+    const totalPixels = 12 * 7;
+    const pixels = [];
+    for (let i = 0; i < totalPixels; i++) {
+      const div = document.createElement('div');
+      div.className = 'pixel';
+      matrixEl.appendChild(div);
+      pixels.push(div);
+    }
+
+    function animateMatrix() {
+      for (let col = 0; col < 12; col++) {
+        const level = Math.floor(Math.random() * 7) + 1;
+        for (let row = 0; row < 7; row++) {
+          const idx = row * 12 + col;
+          const active = (6 - row) < level;
+          pixels[idx].className = 'pixel' + (active ? (row < 2 ? ' alt' : ' on') : '');
+        }
+      }
+    }
+    setInterval(animateMatrix, 320);
+    animateMatrix();
+
+    // 3. MENSAJES ROTATIVOS
+    const mensajes = [
+      { tag: 'ESTADO', msg: 'Sistema en línea · Sincronizado por Wi-Fi' },
+      { tag: 'TIP VISUAL', msg: 'Toca la pantalla para alternar colores LED' },
+      { tag: 'ENERGÍA', msg: '3 toques al botón Home activa Acceso Guiado' }
+    ];
+    let msgIdx = 0;
+    setInterval(() => {
+      msgIdx = (msgIdx + 1) % mensajes.length;
+      document.getElementById('ticker-tag').textContent = mensajes[msgIdx].tag;
+      document.getElementById('ticker-text').textContent = mensajes[msgIdx].msg;
+    }, 8000);
+
+    // 4. CLIMA DETALLADO CON OPEN-METEO
+    function weatherCodeToInfo(code) {
+      if (code === 0) return ['☀️', 'Despejado'];
+      if (code === 1) return ['🌤️', 'Mayormente despejado'];
+      if (code === 2) return ['⛅', 'Parcialmente nublado'];
+      if (code === 3) return ['☁️', 'Nublado'];
+      if (code === 45 || code === 48) return ['🌫️', 'Neblina'];
+      if ([51, 53, 55, 56, 57].includes(code)) return ['🌦️', 'Llovizna'];
+      if ([61, 63, 65, 66, 67].includes(code)) return ['🌧️', 'Lluvia'];
+      if ([80, 81, 82].includes(code)) return ['🌦️', 'Chubascos'];
+      if ([95, 96, 99].includes(code)) return ['⛈️', 'Tormenta eléctrica'];
+      return ['🌡️', 'Condición variable'];
+    }
+
+    async function fetchWeather() {
+      try {
+        const url = `https://api.open-meteo.com/v1/forecast?latitude=${LAT}&longitude=${LON}&current=temperature_2m,apparent_temperature,relative_humidity_2m,precipitation_probability,weather_code,wind_speed_10m&hourly=temperature_2m,precipitation_probability,weather_code&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=auto`;
+        const res = await fetch(url);
+        if (!res.ok) throw new Error('HTTP error');
+        const data = await res.json();
+
+        const temp = Math.round(data.current.temperature_2m);
+        const feels = Math.round(data.current.apparent_temperature);
+        const hum = data.current.relative_humidity_2m;
+        const wind = Math.round(data.current.wind_speed_10m);
+        const popNow = data.current.precipitation_probability ?? data.daily.precipitation_probability_max?.[0] ?? 0;
+        const [ico, desc] = weatherCodeToInfo(data.current.weather_code);
+        const tMin = Math.round(data.daily.temperature_2m_min[0]);
+        const tMax = Math.round(data.daily.temperature_2m_max[0]);
+
+        document.getElementById('temp').textContent = `${temp}°`;
+        document.getElementById('w-feels').textContent = `Sensación ${feels}°`;
+        document.getElementById('w-icon').textContent = ico;
+        document.getElementById('w-desc').textContent = desc;
+        document.getElementById('w-minmax').textContent = `${tMin}°/${tMax}°`;
+        document.getElementById('w-pop').textContent = `${popNow}%`;
+        document.getElementById('w-hum').textContent = `${hum}%`;
+        document.getElementById('w-wind').textContent = `${wind} km/h`;
+
+        const now = new Date();
+        const updTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+        document.getElementById('w-updated').textContent = `Act. ${updTime}`;
+
+        // Buscar el índice horario más cercano a la hora actual
+        const currentIsoPrefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}T${String(now.getHours()).padStart(2, '0')}:00`;
+        let startIdx = data.hourly.time.findIndex(t => t >= currentIsoPrefix);
+        if (startIdx < 0) startIdx = now.getHours();
+
+        const forecastEl = document.getElementById('forecast');
+        forecastEl.innerHTML = '';
+
+        [2, 4, 6, 8].forEach(offset => {
+          const idx = startIdx + offset;
+          if (data.hourly.time[idx]) {
+            const hourStr = data.hourly.time[idx].slice(11, 16);
+            const fTemp = Math.round(data.hourly.temperature_2m[idx]);
+            const fPop = data.hourly.precipitation_probability?.[idx] ?? 0;
+            const [fIco] = weatherCodeToInfo(data.hourly.weather_code[idx]);
+
+            forecastEl.innerHTML += `
+              <div class="f-item">
+                <div class="f-hour">${hourStr}</div>
+                <div class="f-ico">${fIco}</div>
+                <div class="f-val">${fTemp}°</div>
+                <div class="f-pop">💧 ${fPop}%</div>
+              </div>
+            `;
+          }
+        });
+      } catch (e) {
+        document.getElementById('w-desc').textContent = 'Reintentando clima...';
+      }
+    }
+
+    fetchWeather();
+    setInterval(fetchWeather, 15 * 60 * 1000);
+    document.addEventListener('visibilitychange', () => {
+      if (!document.hidden) fetchWeather();
+    });
+
+    // 5. CAMBIO DE COLOR AL TOCAR LA PANTALLA
+    const themes = [
+      ['#00e5ff', '#7c4dff'],
+      ['#00e676', '#00b0ff'],
+      ['#ff9100', '#ff1744'],
+      ['#f50057', '#651fff']
+    ];
+    let tIdx = 0;
+    function toggleTheme() {
+      tIdx = (tIdx + 1) % themes.length;
+      document.documentElement.style.setProperty('--accent', themes[tIdx][0]);
+      document.documentElement.style.setProperty('--accent-2', themes[tIdx][1]);
+    }
+  </script>
+</body>
+</html>
